@@ -1,0 +1,86 @@
+import sklearn
+import regex as re
+from nltk.probability import FreqDist
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+import nltk
+nltk.download('stopwords')
+import os
+from nltk.tokenize import word_tokenize
+from os.path import join
+
+file = open("/content/drive/MyDrive/Programarea-mea/NLP/Homeworks/BIO_CS_DATA/TEST/biology/class_11_biology_chapter_1_0 (1).txt")
+text = file.read()
+stop_words = stopwords.words('english')
+porter = PorterStemmer()
+nltk.download('punkt')
+
+#Task 1
+class TextNormalizer:
+  def __init__(self):
+    self = self
+
+  def normalize(self, text):
+    text = text.replace('\n', ' ').replace('\r', ' ')
+    text = text.lower()
+    text = ' '.join(re.findall('[a-z]+', text))
+    return text
+
+#Task 2
+from nltk.probability import FreqDist
+class WordsExtractor:
+  def __init__(self,stop_words):
+    self.stop_words = stop_words
+    self.textul = None
+  
+  def _fit(self, frequency):
+    return frequency.hapaxes()
+
+  def transform(self, text):
+    frequency = FreqDist(text.split(' '))
+    hapaxes_list = self._fit(frequency)
+    self.textul = ' '.join(c for c in text.split(' ') if c not in hapaxes_list and c not in self.stop_words)
+    return self.textul
+
+  
+
+#Task 3
+class ApplyStemmer:
+  def __init__(self, folder_path, stemmer):
+    self.__folder_path = folder_path
+    self.stemmer = stemmer
+    self.classes_ = os.listdir(self.__folder_path)
+    self.cls_dict = {}
+
+    for cls in self.classes_:
+      self.cls_dict[cls] = []
+      for file_path in os.listdir(join(self.__folder_path, cls)):
+        self.cls_dict[cls].append(join(self.__folder_path, cls, file_path))
+  
+  def __getitem__(self, cls):
+    return open(self.cls_dict[cls[0]][cls[1]], 'r', encoding='utf-8').read()
+    
+  def text_curat(self):
+    for cls in self.cls_dict:
+      for thing in self.cls_dict[cls]: 
+        text= str(open(thing, 'r', encoding='utf-8').read())
+        text = WordsExtractor(stop_words).transform(text)
+        text2 = ''
+        text2 = ' '.join([self.stemmer.stem(word) for word in word_tokenize(text) if word is not None])  
+        name = thing[:-4]
+        f = open(name+'(2).txt', "x")
+        f.write(text2)
+        f.close()
+  
+
+a = TextNormalizer()
+b = a.normalize(text)
+
+stop_words = stopwords.words('english')
+c = WordsExtractor(stop_words)
+d = c.transform(b)
+d
+
+path = '/content/drive/MyDrive/Programarea-mea/NLP/Homeworks/BIO_CS_DATA/TEST'
+G = ApplyStemmer(path,porter)
+G.text_curat()
